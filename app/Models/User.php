@@ -7,6 +7,7 @@ use App\Models\room;
 use App\Models\Seat;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
@@ -44,6 +45,13 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
     ];
 
+
+
+    protected function avatar():Attribute{
+        return Attribute::make(get: function($value){
+        return $value ? '/storage/avatars/' . $value : '/fallback-avatar.jpg';
+    });
+}
 
     public function rooms(){
         return $this->hasMany(room::class,"user_id");

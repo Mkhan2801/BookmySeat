@@ -17,16 +17,42 @@ class UserController extends Controller
             $user = auth()->user();
         return view('user_result',['data'=>$user]);
         }else{
-            return view('home');
+            return view('login-singup');
         }
     }
 
 
 
+    public function Profile(){
+        return view('profile');
+    }
 
 
 
+    public function ProfileUpdate(Request $req){
 
+
+        $req->validate(['avatar'=> 'image|max:3000',
+        'password' => [ 'min:8','confirmed']]);
+        $input['password']=bcrypt($input['password']);
+        $manager = new ImageManager(new Driver());
+
+        $user = auth()->user();
+        $filename = $user->id . "-" . uniqid() . ".jpg";
+        $image = $manager->read($req->file("avatar"));
+        $imageData = $image->cover(120,120)->toJpeg();
+        Storage::put("public/avatars/" . $filename,$imageData);
+        
+        $oldAvatar = $user->avatar;
+        $user->avatar = $filename;
+        $user->save();
+        if($oldAvatar != "fallback-avatar.jpg"){
+        Storage::delete(str_replace("/storage/","/public/",$oldAvatar));
+        }
+
+
+        return view('home',['user'=>$user]);
+    }
 
     public function SingUp(Request $req ){
         $input = $req->validate([
